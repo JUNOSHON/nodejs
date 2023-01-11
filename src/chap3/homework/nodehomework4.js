@@ -1,3 +1,5 @@
+import fs from "fs/promises";
+
 async function answer() {
     
     let data = fs.readFile('./readme2.txt');
