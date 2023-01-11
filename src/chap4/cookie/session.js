@@ -12,40 +12,45 @@ const parseCookies = (cookie ='') =>
             return acc;
         }, {});
 
-
+const session = {};
 http.createServer(async (req,res) => {
     const cookies = parseCookies(req.headers.cookie);
 
 
-if(req.url.startsWith('/login')) { //주소가 login으로 시작할 때
+    if(req.url.startsWith('/login')) { //주소가 login으로 시작할 때
 
-    const url = new URL(req.url, 'http://localhost: 8084');
+    const url = new URL(req.url, 'http://localhost: 8085');
     const name = url.searchParams.get('name');
     const expires = new Date();
-
     expires.setMinutes(expires.getMinutes() + 5);
+
+    const uniqueInt = Date.now();
+    session[uniqueInt] = {
+        name,
+        expires,
+    };
     res.writeHead(302, {
         Location: '/',
-        'Set-Cookie' : `name = ${encodeURIComponent(name)}; Expires=${expires.toGMTString()}; HttpOnly; Path=/`,
+        'Set-Cookie' : `session = ${uniqueInt}; Expires=${expires.toGMTString()}; HttpOnly; Path=/`,
     });
 
     res.end();
 }
-else if (cookies.name) { //주소가 /이면서 name쿠키가 있을 경우
+    else if (cookies.session && session[cookies.session].expires>new Date()) { //주소가 /이면서 name쿠키가 있을 경우
     res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8'});
-    res.end(`${cookies.name}님 안녕하세요`); 
+    res.end(`${session[cookies.session].name}님 안녕하세요.`); 
 }
-else{
-    try{
+    else{
+        try{
         const data = await fs.readFile(path.join(__dirname, 'cookie2.html'));
         res.writeHead(200, { 'Content-Type' : 'text/html; charset=utf-8'});
         res.end(data);
-    }catch(err){
+        }catch(err){
         res.writeHead(500, {'Content-Type': 'text/plain; charset=utf-8'});
         res.end(err.message);
     }
 }
 })
-    .listen(8084, () => {
-        console.log('8084포트에서 대기중');
+    .listen(8085, () => {
+        console.log('8085포트에서 대기중');
     });
