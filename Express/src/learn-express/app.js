@@ -13,13 +13,7 @@ const app = express();
  
 app.set('port', process.env.PORT || 3000);
 
-app.use(express.json());
-app.use(express.urlencoded({extended: false})); //body-parser 사용법
 
-//app.use('/', express.static(path.join(__dirname, 'public')));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false}));
-app.use(cookieParser(process.env.COOKIE_SECRET));
 
 app.use(session({
     resave: false,
@@ -36,9 +30,13 @@ app.use((req, res, next) => {
     console.log('모든 요청에 다 실행한다');
     next();
 })
-app.use(morgan('dev'));
-app.use('/', express.static(path.join(__dirname),'public'));
-
+app.use(
+    morgan('dev'),
+    express.static('/', express.static(path.join(__dirname),'public')),
+    express.json(),
+    express.urlencoded({extended:false}),
+    cookieParser(process.env.COOKIE_SECRET),
+);
 
 
 app.get('/', (req,res,next) => {
